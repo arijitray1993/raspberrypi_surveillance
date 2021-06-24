@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Surveillance Robot</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+    <div class="jumbotron jumbotron-fluid">
+        <div class="container-fluid">
+            <h1>Control Interface</h1>
+            <p> Move Robot to take pictures </p>
+        </div> 
+    </div>
+    <div class='container-fluid'>
+        <div class = "row">
+        <div class="col">
+            <form>
+                <button type="button" onclick="send('left')">Left</button>
+                <button type="button" onclick="send('right')">Right</button>
+                <br>
+            </form>
+        </div>
+        </div>
+        <div class="row">
+        <div class="col-sm-3">
+            <div id="status"></div>
+        </div>
+        
+        </div> 
+    </div>
+    
+</body>
+
+<script>
+
+function writeImage(response, id){
+    
+    document.getElementById(id).innerHTML = '<img class="img-fluid" src="'+response+'">';    
+    
+}
+
+function writeText(response, id){
+    document.getElementById(id).innerHTML = response;    
+}
+
+async function send(direction){
+    let formvars = new FormData();
+
+    formvars.append("direction", direction);
+    writeText("Loading...", "status")
+    try {
+        
+        let r = await fetch('/updateim', {method: "POST", body: formvars}); 
+        let resp = await r.json();
+        writeImage(resp['im'], "status");
+    } catch(e) {
+        writeText(r.status, "status");
+    }
+
+}
+</script>
