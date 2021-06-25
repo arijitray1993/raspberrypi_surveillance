@@ -1,3 +1,4 @@
-# Rapberry Pi Surveillance Camera Tutorial
+# Rapberry Pi Surveillance Camera Tutorial 
 
+WIP, check back in a few days. 
 
