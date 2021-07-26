@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Surveillance Robot</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</head>
+<body>
+
+    
+    <nav class="navbar navbar-expand-sm bg-dark navbar-dark fixed-top">            
+        <a class="navbar-brand" href="#">Remote Robot Control Interface</a>
+    </nav>
+
+    <div class="container" style="margin-top:80px">
+        <div class="row">
+            <div class="col">
+                <div class="card">
+                    <div class="card-header">
+                        Robot Control
+                    </div>
+                    <div class="card-body">
+                        <form>
+                            <button type="button" onclick="robot('right')">Right</button>
+                            <button type="button" onclick="robot('left')">Left</button>
+                            <button type="button" onclick="robot('take_pic')">Update Picture</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card">
+                    <div class="card-header">
+                        Light Control
+                    </div>
+                    <div class="card-body">
+                        <form>
+                            <button type="button" onclick="light('toggle')">On/Off</button>
+                        </form>
+                    </div>
+                </div>
+            </div>    
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <div class="card bg-light" style="width:100%">
+                    <div class="card-header">
+                        Status
+                    </div>
+                    <div class="card-body"> 
+                            <code>
+                                <div id="contacting"> </div>
+                                <div id="statusText"> </div>
+                            </code>
+                    </div>
+                </div>
+            </div>          
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <div class="card bg-light" style="width:100%">
+                    <div class="card-header">
+                        Output
+                    </div>
+                    <div class="card-body"> 
+                        <div id="got_response">  </div> 
+                    </div>
+                    <div id="result_scroll"></div>
+                </div>
+            </div>   
+        </div>
+        
+    </div>
+    
+    
+</body>
+
+<script>
+init_status();
+get_status();
+
+function scrolltoview(id){
+    document.getElementById(id).scrollIntoView({block: 'end', behavior: 'smooth'});
+}
+
+
+async function send(formvars){
+
+    document.getElementById('got_response').innerHTML = "<div class='spinner-border'></div>"    
+    
+    let r = await fetch('/request_robot', {method: "POST", body: formvars});
+    let resp = await r.json();
+
+    let result = document.getElementById('got_response');
+    result.innerHTML = "<img onload=\"scrolltoview('result_scroll')\" src='"+resp+"'>";
+    
+}
+
+async function init_status(){
+    document.getElementById("contacting").innerHTML="<div class='spinner-grow spinner-grow-sm text-muted'></div> Contacting robot...";
+    let formvars = new FormData();
+    //console.log("waiting for init data...")
+    let r = await fetch('/request_robot', {method: "POST", body: formvars});
+    let resp = await r.json();
+    //console.log(resp)
+    let curr_status = document.getElementById('statusText');
+    document.getElementById("contacting").innerHTML="";
+    curr_status.innerHTML=resp;
+}
+
+async function get_status(){
+    
+    //document.getElementById("contacting").innerHTML="<div class='spinner-border'></div> Contacting robot...";
+    //setTimeout(function(){}, 1000);
+    //console.log("updated state init");
+    //document.getElementById("contacting").innerHTML="";
+    while(true){
+        //console.log("waiting for status");
+        let status = await fetch('/get_statustext', {method: "GET"});
+        //console.log("waiting for status text");
+        let statusText = await status.json();
+        //console.log("got some status text");
+        //console.log(statusText);
+        let curr_status = document.getElementById('statusText');
+        let new_para = document.createElement("P");
+        let new_status = document.createTextNode(statusText);
+        new_para.appendChild(new_status);
+        curr_status.appendChild(new_para);
+        curr_status.scrollIntoView({block: 'end', behavior: 'smooth'});
+    }
+}
+
+async function robot(direction){
+
+    let formvars = new FormData();
+
+    formvars.append("direction", direction);
+
+    send(formvars);
+
+}
+
+async function light(instruction){
+
+    let formvars = new FormData();
+
+    formvars.append("light", instruction);
+
+    send(formvars);
+
+}
+</script>
